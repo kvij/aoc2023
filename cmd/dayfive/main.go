@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const input = `
@@ -225,17 +226,31 @@ func main() {
 
 	part2 := func(seeds []int) (answer int) {
 		answer = int(^uint(0) >> 1)
+		mu := sync.Mutex{}
+		wg := sync.WaitGroup{}
+		wg.Add(len(seeds) / 2)
 		for i := 0; i < len(seeds); i += 2 {
 			start := seeds[i]
 			end := start + seeds[i+1]
-			for seed := start; seed < end; seed++ {
-				loc := seedToLoc(seed)
-				if loc < answer {
-					answer = loc
+			go func(start, end int) {
+				lowestLoc := int(^uint(0) >> 1)
+				for seed := start; seed < end; seed++ {
+					loc := seedToLoc(seed)
+					if loc < lowestLoc {
+						lowestLoc = loc
+					}
 				}
-			}
+
+				mu.Lock()
+				if lowestLoc < answer {
+					answer = lowestLoc
+				}
+				mu.Unlock()
+				wg.Done()
+			}(start, end)
 		}
 
+		wg.Wait()
 		return answer
 	}
 	fmt.Printf("part 1 anwer is %d\n", part1(seeds))
