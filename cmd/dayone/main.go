@@ -1014,7 +1014,7 @@ const numbers = "1234567890"
 
 func main() {
 	s := bufio.NewScanner(strings.NewReader(input))
-	var answer int
+	var answer, answer2 int
 	for s.Scan() {
 		l := s.Text()
 		if l != "" {
@@ -1023,6 +1023,13 @@ func main() {
 				log.Printf("failed to callibrte %q: %s\n", l, err)
 			}
 			answer += cv
+
+			l = wordToNum(l)
+			cv, err = callibrate(l)
+			if err != nil {
+				log.Printf("failed to callibrte %q: %s\n", l, err)
+			}
+			answer2 += cv
 		}
 	}
 	if err := s.Err(); err != nil {
@@ -1030,10 +1037,30 @@ func main() {
 	}
 
 	log.Println("The answer is: ", answer)
+	log.Println("The part 2 answer is: ", answer2)
 }
 
 func callibrate(l string) (int, error) {
 	first := l[strings.IndexAny(l, numbers)]
 	second := l[strings.LastIndexAny(l, numbers)]
 	return strconv.Atoi(string([]byte{first, second}))
+}
+
+var wordMap = [...][2]string{
+	{"one", "one1one"},
+	{"two", "two2two"},
+	{"three", "three3three"},
+	{"four", "four4four"},
+	{"five", "five5five"},
+	{"six", "six6six"},
+	{"seven", "seven7seven"},
+	{"eight", "eight8eight"},
+	{"nine", "nine9nine"},
+}
+
+func wordToNum(l string) string {
+	for _, replacement := range wordMap {
+		l = strings.ReplaceAll(l, replacement[0], replacement[1])
+	}
+	return l
 }
